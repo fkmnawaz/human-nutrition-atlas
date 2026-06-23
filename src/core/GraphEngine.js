@@ -98,7 +98,20 @@ export class GraphEngine {
     /**
      * Load graph
      */
-    load(nodes, edges) {
+    load(graph) {
+
+        this.graph = graph;
+
+        this.cy.elements().remove();
+
+        this.cy.add(
+            graph.toCyElements()
+        );
+
+        this.layoutManager.run("fcose");
+
+    }
+    /*load(nodes, edges) {
 
         this.nodes = nodes;
         this.edges = edges;
@@ -135,7 +148,7 @@ export class GraphEngine {
 
         this.layoutManager.run("fcose");
 
-    }
+    }*/
 
     /**
      * Execute layout
