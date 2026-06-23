@@ -7,7 +7,9 @@
  *
  * Version : 0.1.1
  *********************************************************************/
-
+import { EventBus } from "../core/EventBus";
+import { InteractionManager } from "./InteractionManager";
+import { StyleBuilder } from "./StyleBuilder";
 import { LayoutManager } from "./LayoutManager";
 import { NodeColors, EdgeColors } from "./ColorPalette";
 import cytoscape from "cytoscape";
@@ -23,6 +25,8 @@ export class GraphEngine {
 
         this.cy = null;
 
+        this.styleBuilder = new StyleBuilder("light");
+
         this.nodes = [];
 
         this.edges = [];
@@ -34,6 +38,10 @@ export class GraphEngine {
             edgeSelected: [],
             graphReady: []
         };
+
+        this.bus = new EventBus();
+
+        this.interactionManager = null;
 
     }
 
@@ -48,7 +56,7 @@ export class GraphEngine {
 
             elements: [],
 
-            style: this.defaultStyles(),
+            style: this.styleBuilder.build(),
 
             wheelSensitivity: 0.20,
 
@@ -62,10 +70,28 @@ export class GraphEngine {
             }
 
         });
-        this.layoutManager = new LayoutManager(this.cy);
-        this.registerEvents();
 
-        this.fire("graphReady", this.cy);
+        this.interactionManager =
+            new InteractionManager(
+                this.cy,
+                this.bus
+            );
+
+        this.interactionManager.initialize();
+
+        this.layoutManager = new LayoutManager(this.cy);
+
+        this.bus.publish("graphReady", this.cy);
+
+    }
+
+    setTheme(theme) {
+
+        this.styleBuilder.setTheme(theme);
+
+        this.cy.style(
+            this.styleBuilder.build()
+        );
 
     }
 
@@ -130,40 +156,6 @@ export class GraphEngine {
 
     }
 
-    /**
-     * Register listeners
-     */
-    registerEvents() {
-
-        this.cy.on("tap", "node", evt => {
-
-            const node = evt.target;
-
-            this.selectedNode = node;
-
-            this.highlightNode(node.id());
-
-            this.fire("nodeSelected", node.data());
-
-        });
-
-        this.cy.on("tap", "edge", evt => {
-
-            this.fire("edgeSelected", evt.target.data());
-
-        });
-
-        this.cy.on("tap", evt => {
-
-            if (evt.target === this.cy) {
-
-                this.clearSelection();
-
-            }
-
-        });
-
-    }
 
     /**
      * Highlight one node and neighbors
@@ -228,12 +220,17 @@ export class GraphEngine {
     /**
      * Register event
      */
-    on(event, callback) {
+    /*on(event, callback) {
 
         if (!this.eventHandlers[event])
             return;
 
         this.eventHandlers[event].push(callback);
+
+    }*/
+    subscribe(event, callback) {
+
+        this.bus.subscribe(event, callback);
 
     }
 
@@ -250,143 +247,6 @@ export class GraphEngine {
 
     }
 
-    /**
-     * Styles
-     */
-    defaultStyles() {
 
-        return [
-
-            {
-                selector: "node",
-
-                style: {
-
-                    label: "data(name)",
-
-                    width: 55,
-
-                    height: 55,
-
-                    "font-size": 13,
-
-                    "font-weight": "bold",
-
-                    "text-wrap": "wrap",
-
-                    "text-max-width": "90px",
-
-                    "text-valign": "bottom",
-
-                    "text-margin-y": 8,
-
-                    "background-color": "#5b8def",
-
-                    color: "#222"
-
-                }
-
-            },
-
-            {
-                selector: 'node[type="Vitamin"]',
-
-                style: {
-
-                    "background-color": NodeColors.Vitamin
-
-                }
-
-            },
-
-            {
-                selector: 'node[type="Mineral"]',
-
-                style: {
-
-                    "background-color": NodeColors.Mineral
-
-                }
-
-            },
-
-            {
-                selector: 'node[type="Organ"]',
-
-                style: {
-
-                    "background-color": NodeColors.Organ
-
-                }
-
-            },
-
-            {
-                selector: 'node[type="Hormone"]',
-
-                style: {
-
-                    "background-color": NodeColors.Hormone
-
-                }
-
-            },
-
-            {
-                selector: "edge",
-
-                style: {
-
-                    width: 2,
-
-                    label: "data(relation)",
-
-                    "font-size": 10,
-
-                    "curve-style": "bezier",
-
-                    "target-arrow-shape": "triangle",
-
-                    "line-color": EdgeColors.default,
-
-                    "target-arrow-color": EdgeColors.default
-
-                }
-
-            },
-
-            {
-                selector: ".highlight",
-
-                style: {
-
-                    "border-width": 4,
-
-                    "border-color": "#ff5722",
-
-                    "line-color": "#ff5722",
-
-                    "target-arrow-color": "#ff5722",
-
-                    opacity: 1
-
-                }
-
-            },
-
-            {
-                selector: ".faded",
-
-                style: {
-
-                    opacity: 0.15
-
-                }
-
-            }
-
-        ];
-
-    }
 
 }
