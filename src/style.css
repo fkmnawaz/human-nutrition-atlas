@@ -1,0 +1,44 @@
+html,
+body {
+
+    height: 100%;
+
+    margin: 0;
+
+    background: #eef2f6;
+
+    font-family:
+
+        Segoe UI,
+
+        sans-serif;
+
+}
+
+#app {
+
+    height: 100vh;
+
+}
+
+#cy {
+
+    height: 100%;
+
+    width: 100%;
+
+    background: white;
+
+    border-radius: 10px;
+
+    box-shadow:
+
+        0 2px 8px rgba(0, 0, 0, .15);
+
+}
+
+input {
+
+    margin-bottom: 8px;
+
+}
